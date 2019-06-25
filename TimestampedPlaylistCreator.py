@@ -11,8 +11,8 @@ myUserID = "liwam"
 
 # Constant variables
 count = 1
-pageLengthNR = 20
-totaldepthNR = 100
+pageLengthNR = 50 # Maximum 50
+totaldepthNR = 200
 dateFormat = "%Y-%m-%d" # Note that playlists are formatted as "startdate - enddate"
 dateFormatLength = len("1999-11-01")
 playlistTimeRange = 1 # Weeks
@@ -27,10 +27,11 @@ def main():
         albumIDs = []
 
         # Create instance of MyArtists class and populate
-        artists = MyArtists(sp)
-        artists.AddTopArtistsLongTerm()
-        artists.AddTopArtistsShortTerm()
-        print(artists.artists)
+        myArtists = MyArtists(sp)
+        myArtists.AddTopArtistsLongTerm()
+        myArtists.AddTopArtistsShortTerm()
+        print(str(len(myArtists.artists)) + ' artists selected: ')
+        print(myArtists.artists)
 
         # Parse New Releases, add to list based on artist
         for page in range(0,int(totaldepthNR/pageLengthNR)):
@@ -39,16 +40,16 @@ def main():
                 #print(album['name'] + '-' +album['artists'][0]['name'])
                 for albumArtist in album['artists']:
                     # Include album even if the artist isn't the first listed
-                    if albumArtist['name'] in artists.artists:
+                    if albumArtist['name'] in myArtists.artists:
                         albumIDs.append(album['id'])
-                        print(album['name'] + '-' + album['artists'][0]['name'])
+                        print('New Releases: ' + album['name'] + '-' + album['artists'][0]['name'])
 
         # Add the New Releases songs to playlist
         for albumID in albumIDs:
             AddAlbumTracksToTimestampedPlaylist(sp, albumID)
 
     else:
-        print('rip')
+        print('Unable to obtain token\n')
 
 # Retrieve the track ID for each track in the album, then add them to the correct timestamped playlist based on the album release date
 def AddAlbumTracksToTimestampedPlaylist(spotifyClient, albumID, position=None):

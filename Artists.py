@@ -2,8 +2,8 @@
 defaultArtists = {'Taylor Swift', 'Joji', 'Katy Perry', 'Miley Cyrus', 'Ariana Grande', 'Shawn Mendes'}
 #defaultArtists = {'Taylor Swift'}
 class MyArtists:
-    longTermArtistsLimit = 40 # Only from 0-50 for now
-    shortTermArtistsLimit = 10 # Only from 0-50 for now
+    longTermArtistsLimit = 50 # Only from 0-50 for now
+    shortTermArtistsLimit = 30 # Only from 0-50 for now
 
     def __init__(self, _spotifyClient):
         self.artists = defaultArtists
@@ -24,3 +24,4 @@ class MyArtists:
             self.artists.add(artist['name'])
 
     # maybe add a retrieval for medium term?
+    # Perhaps get popular artists? or artists of popular tracks
