@@ -3,6 +3,7 @@ import spotipy.util as util
 from datetime import datetime
 from datetime import timedelta
 from Artists import MyArtists
+from Artists import ArtistAnalytics
 
 #scope = 'user-library-read'
 scope = 'playlist-modify-public user-top-read'
@@ -44,16 +45,29 @@ def main():
                         albumIDs.append(album['id'])
                         print('New Releases: ' + album['name'] + '-' + album['artists'][0]['name'])
 
-        # Add the New Releases songs to playlist
+        # Order the albums by release date to avoid logic errors for GetCorrespondingTimestampedPlaylist
+        # Do this by zipping the list of album IDs with the list of release dates into a list of tuples, then sorting the list of tuples by release date
+        releaseDates = []
         for albumID in albumIDs:
-            AddAlbumTracksToTimestampedPlaylist(sp, albumID)
+            releaseDates.append(datetime.strptime(sp.album(albumID)['release_date'], dateFormat))
+        albumsWithDates = list(zip(albumIDs, releaseDates))
+        albumsWithDates.sort(key=lambda tup: tup[1])
+
+        # Add the New Releases songs to playlist
+        for albumsWithDate in albumsWithDates:
+            AddAlbumTracksToTimestampedPlaylist(sp, albumsWithDate[0], albumsWithDate[1])
+
+        # Graph Analytics
+        artistAnalytics = ArtistAnalytics(sp)
+        artistAnalytics.QueryArtistStats()
+        artistAnalytics.CreatePopularityBarGraph()
+        artistAnalytics.CreateGenreGroupedBarChart()
 
     else:
         print('Unable to obtain token\n')
 
 # Retrieve the track ID for each track in the album, then add them to the correct timestamped playlist based on the album release date
-def AddAlbumTracksToTimestampedPlaylist(spotifyClient, albumID, position=None):
-    releaseDate = datetime.strptime(spotifyClient.album(albumID)['release_date'], dateFormat)
+def AddAlbumTracksToTimestampedPlaylist(spotifyClient, albumID, releaseDate):
     playlistID = GetCorrespondingTimestampedPlaylist(spotifyClient, releaseDate)
     albumTracks = spotifyClient.album(albumID)['tracks']['items']
     albumTrackIDs = []
